@@ -33,7 +33,7 @@ const account4 = {
   pin: 4444
 };
 
-const accounts = [account1, account2, account3, account4];
+const userAccounts = [account1, account2, account3, account4];
 
 // Elements
 const labelWelcome = document.querySelector(".welcome");
@@ -62,8 +62,10 @@ const inputCloseUsername = document.querySelector(".form__input--user");
 const inputClosePin = document.querySelector(".form__input--pin");
 
 const displayMovements = function (movements) {
+  containerMovements.innerHTML = "";
+
   movements.forEach((movement, i) => {
-    const typeOfTrans = movement > 0 ? "deposit" : "withdrawl";
+    const typeOfTrans = movement > 0 ? "deposit" : "withdrawal";
 
     const html = `
       <div class="movements__row">
@@ -77,5 +79,16 @@ const displayMovements = function (movements) {
     containerMovements.insertAdjacentHTML("afterbegin", html);
   });
 };
-
 displayMovements(account1.movements);
+
+const createUserNames = function (accounts) {
+  accounts.forEach((account) => {
+    account.username = account.owner
+      .toLowerCase()
+      .split(" ")
+      .map((name) => name[0])
+      .join("");
+  });
+};
+createUserNames(userAccounts);
+console.log(userAccounts);
