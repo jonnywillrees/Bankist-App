@@ -61,6 +61,9 @@ const inputLoanAmount = document.querySelector(".form__input--loan-amount");
 const inputCloseUsername = document.querySelector(".form__input--user");
 const inputClosePin = document.querySelector(".form__input--pin");
 
+//////////////////////
+// Display Movements
+//////////////////////
 const displayMovements = function (movements) {
   containerMovements.innerHTML = "";
 
@@ -79,8 +82,10 @@ const displayMovements = function (movements) {
     containerMovements.insertAdjacentHTML("afterbegin", html);
   });
 };
-displayMovements(account1.movements);
 
+/////////////////////////////////
+// Calculate and Display Balance
+/////////////////////////////////
 const calcDisplayBalance = function (movements) {
   const balance = movements.reduce((acc, mov) => {
     return acc + mov;
@@ -88,10 +93,12 @@ const calcDisplayBalance = function (movements) {
 
   labelBalance.textContent = `${balance}\u20AC`;
 };
-calcDisplayBalance(account1.movements);
 
-const calcDisplaySummary = function (movements) {
-  const incomes = movements
+/////////////////////////////////
+// Calculate and Display Summary
+/////////////////////////////////
+const calcDisplaySummary = function (account) {
+  const incomes = account.movements
     .filter((mov) => {
       return mov > 0;
     })
@@ -100,7 +107,7 @@ const calcDisplaySummary = function (movements) {
     }, 0);
   labelSumIn.textContent = `${incomes}\u20AC`;
 
-  const out = movements
+  const out = account.movements
     .filter((mov) => {
       return mov < 0;
     })
@@ -109,12 +116,12 @@ const calcDisplaySummary = function (movements) {
     }, 0);
   labelSumOut.textContent = `${Math.abs(out)}\u20AC`;
 
-  const interest = movements
+  const interest = account.movements
     .filter((mov) => {
       return mov > 0;
     })
     .map((deposit) => {
-      return (deposit * 1.2) / 100;
+      return (deposit * account.interestRate) / 100;
     })
     .filter((int, i, arr) => {
       return int >= 1;
@@ -124,7 +131,6 @@ const calcDisplaySummary = function (movements) {
     }, 0);
   labelSumInterest.textContent = `${interest}\u20AC`;
 };
-calcDisplaySummary(account1.movements);
 
 const createUserNames = function (accounts) {
   accounts.forEach((account) => {
@@ -136,3 +142,48 @@ const createUserNames = function (accounts) {
   });
 };
 createUserNames(userAccounts);
+
+///////////////
+// FIND METHOD
+///////////////
+// const account = userAccounts.find((acc) => {
+//   return acc.owner === "Jessica Davis";
+// });
+// console.log(account);
+
+// for (const acc of userAccounts) {
+//   if (acc.owner === "Jessica Davis") {
+//     console.log(acc);
+//   }
+// }
+
+//////////////////
+// Event Handlers
+//////////////////
+// let currentAccount;
+
+// LOGIN EVENT HANDlER
+btnLogin.addEventListener("click", function (e) {
+  e.preventDefault(); // prevent form from submitting
+  const currentAccount = userAccounts.find((acc) => {
+    return acc.username === inputLoginUsername.value;
+  });
+  // if (currentAccount && currentAccount.pin === Number(inputLoginPin.value)) {
+  if (currentAccount?.pin === Number(inputLoginPin.value)) {
+    // OPTIONAL CHAINING
+    // Display UI and a Welcome message
+    labelWelcome.textContent = `Welcome back, ${
+      currentAccount.owner.split(" ")[0]
+    }`;
+    containerApp.style.opacity = 100;
+    // Clear input fields and lose focus
+    inputLoginUsername.value = inputLoginPin.value = "";
+    inputLoginPin.blur();
+    // Display movements
+    displayMovements(currentAccount.movements);
+    // Display balance
+    calcDisplayBalance(currentAccount.movements);
+    // Display summary
+    calcDisplaySummary(currentAccount);
+  }
+});
