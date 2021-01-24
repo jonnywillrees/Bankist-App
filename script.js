@@ -64,10 +64,10 @@ const inputClosePin = document.querySelector(".form__input--pin");
 //////////////////////
 // Display Movements
 //////////////////////
-const displayMovements = function (movements) {
+const displayMovements = function (account) {
   containerMovements.innerHTML = "";
 
-  movements.forEach((movement, i) => {
+  account.movements.forEach((movement, i) => {
     const typeOfTrans = movement > 0 ? "deposit" : "withdrawal";
 
     const html = `
@@ -83,15 +83,14 @@ const displayMovements = function (movements) {
   });
 };
 
-/////////////////////////////////
-// Calculate and Display Balance
-/////////////////////////////////
-const calcDisplayBalance = function (movements) {
-  const balance = movements.reduce((acc, mov) => {
+///////////////////////////////////////
+// Calculate, Store and Display Balance
+///////////////////////////////////////
+const calcDisplayBalance = function (account) {
+  account.balance = account.movements.reduce((acc, mov) => {
     return acc + mov;
   }, 0);
-
-  labelBalance.textContent = `${balance}\u20AC`;
+  labelBalance.textContent = `${account.balance}\u20AC`;
 };
 
 /////////////////////////////////
@@ -132,6 +131,9 @@ const calcDisplaySummary = function (account) {
   labelSumInterest.textContent = `${interest}\u20AC`;
 };
 
+////////////////////////
+// CREATE USERNAME PROP
+////////////////////////
 const createUserNames = function (accounts) {
   accounts.forEach((account) => {
     account.username = account.owner
@@ -142,6 +144,18 @@ const createUserNames = function (accounts) {
   });
 };
 createUserNames(userAccounts);
+
+////////////
+// UPADTE UI
+////////////
+const updateUI = function (account) {
+  // Display movements
+  displayMovements(account);
+  // Display balance
+  calcDisplayBalance(account);
+  // Display summary
+  calcDisplaySummary(account);
+};
 
 ///////////////
 // FIND METHOD
@@ -160,12 +174,12 @@ createUserNames(userAccounts);
 //////////////////
 // Event Handlers
 //////////////////
-// let currentAccount;
+let currentAccount;
 
 // LOGIN EVENT HANDlER
 btnLogin.addEventListener("click", function (e) {
   e.preventDefault(); // prevent form from submitting
-  const currentAccount = userAccounts.find((acc) => {
+  currentAccount = userAccounts.find((acc) => {
     return acc.username === inputLoginUsername.value;
   });
   // if (currentAccount && currentAccount.pin === Number(inputLoginPin.value)) {
@@ -179,11 +193,36 @@ btnLogin.addEventListener("click", function (e) {
     // Clear input fields and lose focus
     inputLoginUsername.value = inputLoginPin.value = "";
     inputLoginPin.blur();
-    // Display movements
-    displayMovements(currentAccount.movements);
-    // Display balance
-    calcDisplayBalance(currentAccount.movements);
-    // Display summary
-    calcDisplaySummary(currentAccount);
+
+    updateUI(currentAccount);
   }
+});
+
+// TRANSFER BUTTON HANDLER
+btnTransfer.addEventListener("click", function (e) {
+  e.preventDefault();
+  const amount = Number(inputTransferAmount.value);
+  const transferTo = userAccounts.find((account) => {
+    return account.username === inputTransferTo.value;
+  });
+  console.log(transferTo);
+
+  if (
+    amount > 0 &&
+    transferTo &&
+    currentAccount.balance >= amount &&
+    transferTo.username !== currentAccount.username
+  ) {
+    // Remove amount / add withdrawal from current account
+    currentAccount.movements.push(-amount);
+    // Add amount (deposit) to 'transferTo'
+    transferTo.movements.push(amount);
+    // Display movements, calc and display balance, calc and display summary
+    setInterval(function () {
+      updateUI(currentAccount);
+    }, 3000);
+  }
+  // Clear input fields and lose focus
+  inputTransferTo.value = inputTransferAmount.value = "";
+  inputTransferAmount.blur();
 });
