@@ -64,10 +64,12 @@ const inputClosePin = document.querySelector(".form__input--pin");
 //////////////////////
 // Display Movements
 //////////////////////
-const displayMovements = function (account) {
+const displayMovements = function (movements, sort = false) {
   containerMovements.innerHTML = "";
 
-  account.movements.forEach((movement, i) => {
+  const movs = sort ? [...movements].sort((a, b) => a - b) : movements;
+
+  movs.forEach((movement, i) => {
     const typeOfTrans = movement > 0 ? "deposit" : "withdrawal";
 
     const html = `
@@ -150,31 +152,18 @@ createUserNames(userAccounts);
 ////////////
 const updateUI = function (account) {
   // Display movements
-  displayMovements(account);
+  displayMovements(currentAccount.movements);
   // Display balance
   calcDisplayBalance(account);
   // Display summary
   calcDisplaySummary(account);
 };
 
-///////////////
-// FIND METHOD
-///////////////
-// const account = userAccounts.find((acc) => {
-//   return acc.owner === "Jessica Davis";
-// });
-// console.log(account);
-
-// for (const acc of userAccounts) {
-//   if (acc.owner === "Jessica Davis") {
-//     console.log(acc);
-//   }
-// }
-
 //////////////////
 // Event Handlers
 //////////////////
 let currentAccount;
+let sorted = false;
 
 // LOGIN EVENT HANDlER
 btnLogin.addEventListener("click", function (e) {
@@ -217,13 +206,36 @@ btnTransfer.addEventListener("click", function (e) {
     currentAccount.movements.push(-amount);
     // Add amount (deposit) to 'transferTo'
     transferTo.movements.push(amount);
-    // Display movements, calc and display balance, calc and display summary
+    // Update UI
     setInterval(function () {
       updateUI(currentAccount);
     }, 3000);
     // Clear input fields and lose focus
     inputTransferTo.value = inputTransferAmount.value = "";
     inputTransferAmount.blur();
+  }
+});
+
+// REQUEST A LOAN HANDLER
+btnLoan.addEventListener("click", function (e) {
+  e.preventDefault();
+
+  let amount = Number(inputLoanAmount.value);
+
+  const loanApproved = currentAccount.movements.some((movement) => {
+    return movement >= amount * 0.1;
+  });
+
+  if (amount > 0 && loanApproved) {
+    // Add movement
+    currentAccount.movements.push(amount);
+    // Update UI
+    setInterval(function () {
+      updateUI(currentAccount);
+    }, 3000);
+    // Clear input fields and lose focus
+    inputLoanAmount.value = "";
+    inputLoanAmount.blur();
   }
 });
 
@@ -247,4 +259,12 @@ btnClose.addEventListener("click", function (e) {
     // Hide UI
     containerApp.style.opacity = 0;
   }
+});
+
+// SORT MOVEMENTS HANDLER
+btnSort.addEventListener("click", function (e) {
+  e.preventDefault();
+
+  displayMovements(currentAccount.movements, !sorted);
+  sorted = !sorted;
 });
