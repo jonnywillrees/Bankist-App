@@ -221,8 +221,30 @@ btnTransfer.addEventListener("click", function (e) {
     setInterval(function () {
       updateUI(currentAccount);
     }, 3000);
+    // Clear input fields and lose focus
+    inputTransferTo.value = inputTransferAmount.value = "";
+    inputTransferAmount.blur();
   }
-  // Clear input fields and lose focus
-  inputTransferTo.value = inputTransferAmount.value = "";
-  inputTransferAmount.blur();
+});
+
+// CLOSE ACCOUNT HANDLER
+btnClose.addEventListener("click", function (e) {
+  e.preventDefault();
+
+  if (
+    Number(inputClosePin.value) === currentAccount.pin &&
+    inputCloseUsername.value === currentAccount.username
+  ) {
+    console.log("PIN AND USERNAME CORRECT");
+    const index = userAccounts.findIndex((account) => {
+      return account.username === currentAccount.username;
+    });
+    // Delete account
+    userAccounts.splice(index, 1);
+    // Clear input fields and lose focus
+    inputCloseUsername.value = inputClosePin.value = "";
+    inputClosePin.blur();
+    // Hide UI
+    containerApp.style.opacity = 0;
+  }
 });
